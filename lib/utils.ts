@@ -86,3 +86,29 @@ export function normalizeEmail(email: string | null | undefined): string {
   if (!email) return "";
   return email.trim().toLowerCase();
 }
+
+/**
+ * Returns a same-origin path safe to pass to router.push or NextResponse.redirect.
+ *
+ * Rejects anything that could navigate off-origin or execute script, including
+ * absolute URLs, protocol-relative URLs (//evil.com, /\evil.com), and pseudo
+ * schemes such as javascript:, data:, or vbscript:. Falls back to "/" for any
+ * value that does not start with a single "/" followed by a path character.
+ */
+export function safeRedirectPath(
+  value: string | null | undefined,
+  fallback: string = "/",
+): string {
+  if (typeof value !== "string" || value.length === 0) return fallback;
+
+  // Must be a path beginning with a single forward slash.
+  if (value[0] !== "/") return fallback;
+
+  // Reject protocol-relative ("//host") and backslash variants ("/\host")
+  // that some browsers normalize to "//host".
+  if (value.length > 1 && (value[1] === "/" || value[1] === "\\")) {
+    return fallback;
+  }
+
+  return value;
+}
